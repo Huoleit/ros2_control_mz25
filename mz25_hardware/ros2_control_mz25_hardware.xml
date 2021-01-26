@@ -1,0 +1,9 @@
+<library path="mz25_hardware">
+  <class name="mz25_hardware/MZ25SystemHardware"
+         type="ros2_control_mz25_hardware::MZ25SystemHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ROS2 Control minimal robot protocol for mz25.
+    </description>
+  </class>
+</library>

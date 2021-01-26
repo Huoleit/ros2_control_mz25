@@ -1,0 +1,20 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 2  # Hz
+
+    mz25_arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
+
+mz25_arm_controller:
+  ros__parameters:
+    joints:
+      - mz25_joint1
+      - mz25_joint2
+      - mz25_joint3
+      - mz25_joint4
+      - mz25_joint5
+      - mz25_joint6
+

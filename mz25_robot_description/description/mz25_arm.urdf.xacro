@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mz25">
+  <xacro:include filename="mz25_components/mz25_arm.xacro" />
+  <xacro:include filename="mz25_components/mz25_arm.ros2_control.xacro"/>
+
+  <!-- for simulation -->
+<!--  <xacro:include filename="$(find franka_description)/robots/panda.gazebo.xacro"/>-->
+<!--  <xacro:include filename="panda.transmission.xacro"/>-->
+  <!-- end for simulation -->
+
+  <xacro:mz25_arm />
+  <xacro:mz25_system name="MZ25System" />
+
+  <!-- for simulation -->
+  <!-- <xacro:arg name="robot_name" default="mz25"/> -->
+<!--  <xacro:panda_gazebo robot_name="$(arg robot_name)" />-->
+<!--  <xacro:panda_transmission robot_name="$(arg robot_name)" load_hand="false" />-->
+  <!-- end for simulation -->
+
+</robot>

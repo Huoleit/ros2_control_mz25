@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="vacuum_gripper">
+  <xacro:macro name="vacuum_gripper" params="connected_to:='' description_pkg:='mz25_robot_description' ns:='' rpy:='0 0 0' xyz:='0 0 0' ">
+    <xacro:unless value="${connected_to == ''}">
+      <joint name="${ns}_vacuum_gripper_joint" type="fixed">
+        <parent link="${connected_to}"/>
+        <child link="${ns}_vacuum_gripper"/>
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+      </joint>
+    </xacro:unless>
+    <link name="${ns}_vacuum_gripper">
+      <visual>
+        <geometry>
+          <mesh filename="package://${description_pkg}/meshes/visual/vacuum_gripper.dae"/>
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://${description_pkg}/meshes/collision/vacuum_gripper.stl"/>
+        </geometry>
+      </collision>
+
+      <!-- for simulation -->
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="2" />
+        <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1" />
+      </inertial>
+      <!-- end for simulation -->
+    </link>
+    <link name="tcp"/>
+    <joint name="tcp_joint" type="fixed">
+      <origin xyz="0.35 0 0" rpy="${pi/2} 0 ${pi/2}" />
+      <!-- <origin xyz="0.34204 -0.00018 -0.00308" rpy="${pi/2} 0 ${pi/2}" />-->
+      <parent link="${ns}_vacuum_gripper" />
+      <child link="tcp" />
+      <axis xyz="0 0 0" />
+    </joint>
+  </xacro:macro>
+</robot>
