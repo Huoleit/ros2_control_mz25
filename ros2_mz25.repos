@@ -1,0 +1,45 @@
+repositories:
+  moveit2_repos/geometric_shapes:
+    type: git
+    url: https://github.com/ros-planning/geometric_shapes
+    version: ros2
+  moveit2_repos/moveit2:
+    type: git
+    url: https://github.com/ros-planning/moveit2
+    version: main
+  moveit2_repos/moveit_msgs:
+    type: git
+    url: https://github.com/ros-planning/moveit_msgs
+    version: ros2
+  moveit2_repos/moveit_resources:
+    type: git
+    url: https://github.com/ros-planning/moveit_resources
+    version: ros2
+  moveit2_repos/srdfdom:
+    type: git
+    url: https://github.com/ros-planning/srdfdom
+    version: ros2
+  moveit2_repos/warehouse_ros:
+    type: git
+    url: https://github.com/ros-planning/warehouse_ros
+    version: ros2
+  moveit2_repos/warehouse_ros_mongo:
+    type: git
+    url: https://github.com/ros-planning/warehouse_ros_mongo
+    version: ros2
+  ros-controls/ros2_control:
+    type: git
+    url: https://github.com/ros-controls/ros2_control
+    version: master
+  ros-controls/ros2_controllers:
+    type: git
+    url: https://github.com/ros-controls/ros2_controllers
+    version: master
+  mz25_moveit:
+    type: git
+    url: https://github.com/Huoleit/mz25_moveit
+    version: master
+  ros2_control_mz25:
+    type: git
+    url: https://github.com/Huoleit/ros2_control_mz25
+    version: master
