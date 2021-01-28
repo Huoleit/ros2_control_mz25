@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 1  # Hz
+    update_rate: 20  # Hz
 
     mz25_arm_controller:
       type: forward_joint_trajectory_controller/ForwardJointTrajectoryController

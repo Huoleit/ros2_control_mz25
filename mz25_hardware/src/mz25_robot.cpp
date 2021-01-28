@@ -59,8 +59,15 @@ namespace mz25_robot
     }
     return_type MZ25Robot::write(std::vector<double> &buff_pos, bool is_end_point)
     {
-        command_position_ = buff_pos;
-        return write_pos_cmd_to_robot(is_end_point);
+
+        if (is_end_point || is_joint_pos_diff_larger_than_thres(command_position_, buff_pos))
+        {
+            command_position_ = buff_pos;
+            return write_pos_cmd_to_robot(is_end_point);
+        }
+
+        return return_type::OK;
+
     }
     return_type MZ25Robot::init_connection()
     {
@@ -138,18 +145,20 @@ namespace mz25_robot
         }
     }
 
-    bool MZ25Robot::is_joint_pos_error_larger_than_thres(std::vector<double> cur, std::vector<double> dst)
+    bool MZ25Robot::is_joint_pos_diff_larger_than_thres(std::vector<double> cur, std::vector<double> dst)
     {
         // error defined as the difference between current and desired
+        double sum = 0;
         if (cur.size() != dst.size())
             return false;
         for (auto i = 0u; i < cur.size(); i++)
         {
-            double error = std::abs(angles::shortest_angular_distance(cur[i], dst[i]));
-            if (error > JOINT_POS_CMD_UPDATE_THRES)
-                return true;
+            sum += std::abs(angles::shortest_angular_distance(cur[i], dst[i]));
         }
-        return false;
+        if (sum > JOINT_DIFF_THRES)
+            return true;
+        else
+            return false;
     }
 
 } // namespace mz25_robot

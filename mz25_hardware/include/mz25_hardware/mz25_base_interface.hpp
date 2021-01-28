@@ -35,7 +35,7 @@ namespace mz25_robot
         }
 
         static constexpr int NUM_AXIS = 6;
-        static constexpr double JOINT_POS_CMD_UPDATE_THRES = 0.01;
+        static constexpr double JOINT_DIFF_THRES = 0.1;
 
     protected:
         std::vector<double> state_position_;

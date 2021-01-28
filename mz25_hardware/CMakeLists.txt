@@ -24,6 +24,11 @@ add_library(
   src/mz25_robot.cpp
 )
 
+target_link_libraries(${PROJECT_NAME}
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libOpennrif.so
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libxerces-c-3.2.so
+)
+
 target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
@@ -47,6 +52,10 @@ install(
 install(
   DIRECTORY include/
   DESTINATION include
+)
+install(
+  DIRECTORY lib/
+  DESTINATION lib
 )
 
 ## EXPORTS
