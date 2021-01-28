@@ -51,6 +51,6 @@ def generate_launch_description():
           'stdout': 'screen',
           'stderr': 'screen',
           },
-          arguments=['--ros-args', '--log-level', 'warn']
-        ),
+          arguments=['--ros-args', '--log-level', 'info']
+        ),       
     ])

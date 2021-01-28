@@ -10,6 +10,8 @@
           <param name="min">-2.97</param>
           <param name="max">2.97</param>
         </command_interface>
+        <command_interface name="isUpdated"/>
+        <command_interface name="isEndPoint"/>
         <state_interface name="position"/>
       </joint>
       <joint name="mz25_joint2">
@@ -17,6 +19,8 @@
           <param name="min">-2.62</param>
           <param name="max">1.83</param>
         </command_interface>
+        <command_interface name="isUpdated"/>
+        <command_interface name="isEndPoint"/>
         <state_interface name="position"/>
       </joint>
       <joint name="mz25_joint3">
@@ -24,6 +28,8 @@
           <param name="min">-1.43</param>
           <param name="max">3.21</param>
         </command_interface>
+        <command_interface name="isUpdated"/>
+        <command_interface name="isEndPoint"/>
         <state_interface name="position"/>
       </joint>
       <joint name="mz25_joint4">
@@ -31,6 +37,8 @@
           <param name="min">-3.32</param>
           <param name="max">3.32</param>
         </command_interface>
+        <command_interface name="isUpdated"/>
+        <command_interface name="isEndPoint"/>
         <state_interface name="position"/>
       </joint>
       <joint name="mz25_joint5">
@@ -38,6 +46,8 @@
           <param name="min">-2.53</param>
           <param name="max">2.53</param>
         </command_interface>
+        <command_interface name="isUpdated"/>
+        <command_interface name="isEndPoint"/>
         <state_interface name="position"/>
       </joint>
       <joint name="mz25_joint6">
@@ -45,6 +55,8 @@
           <param name="min">-6.28</param>
           <param name="max">6.28</param>
         </command_interface>
+        <command_interface name="isUpdated"/>
+        <command_interface name="isEndPoint"/>
         <state_interface name="position"/>
       </joint>
     </ros2_control>

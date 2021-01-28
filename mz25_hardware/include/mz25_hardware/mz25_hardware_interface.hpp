@@ -14,7 +14,7 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "hardware_interface/types/hardware_interface_status_values.hpp"
 #include "mz25_hardware/visibility_control.h"
-#include "mz25_hardware/mz25_fake_robot.hpp"
+#include "mz25_hardware/mz25_robot.hpp"
 
 using hardware_interface::return_type;
 
@@ -47,11 +47,13 @@ namespace ros2_control_mz25_hardware
     return_type write() override;
 
   private:
-    mz25_robot::MZ25FakeRobot mz25_;
+    mz25_robot::MZ25Robot mz25_;
     std::vector<double> state_position_;
     std::vector<double> state_velocity_;
     std::vector<double> state_effort_;
     std::vector<double> command_position_;
+    std::vector<double> command_is_end_point_;
+    std::vector<double> command_is_updated_;
   };
 
 } // namespace ros2_control_mz25_hardware

@@ -23,8 +23,9 @@ namespace mz25_robot
         buff_tor = zeros;
         return return_type::OK;
     }
-    return_type MZ25FakeRobot::write(std::vector<double> &cmd_pos)
+    return_type MZ25FakeRobot::write(std::vector<double> &cmd_pos, bool is_end_point)
     {
+        (void)is_end_point;
         command_position_ = cmd_pos;
         return return_type::OK;
     }

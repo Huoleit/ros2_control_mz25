@@ -57,10 +57,10 @@ namespace mz25_robot
             return return_type::ERROR;
         }
     }
-    return_type MZ25Robot::write(std::vector<double> &buff_pos)
+    return_type MZ25Robot::write(std::vector<double> &buff_pos, bool is_end_point)
     {
         command_position_ = buff_pos;
-        return write_pos_cmd_to_robot();
+        return write_pos_cmd_to_robot(is_end_point);
     }
     return_type MZ25Robot::init_connection()
     {
@@ -113,7 +113,7 @@ namespace mz25_robot
             return return_type::ERROR;
         }
     }
-    return_type MZ25Robot::write_pos_cmd_to_robot()
+    return_type MZ25Robot::write_pos_cmd_to_robot(bool is_end_point)
     {
 
         float fAngle[NUM_AXIS];
@@ -126,7 +126,7 @@ namespace mz25_robot
             }
             fAngle[i] = angles::to_degrees(static_cast<float>(command_position_[i])) + (i == 1 ? 90.0f : 0);
         }
-        int nErr = NR_CtrlMoveJ(nXmlOpenId, fAngle, NUM_AXIS, 0);
+        int nErr = NR_CtrlMoveJ(nXmlOpenId, fAngle, NUM_AXIS, is_end_point ? 2 : 0);
         if (nErr == NR_E_NORMAL)
         {
             return return_type::OK;

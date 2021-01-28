@@ -55,6 +55,14 @@ ForwardJointTrajectoryController::init(const std::string & controller_name)
   node_->declare_parameter<bool>("allow_partial_joints_goal", allow_partial_joints_goal_);
   node_->declare_parameter<double>("constraints.stopped_velocity_tolerance", 0.01);
   node_->declare_parameter<double>("constraints.goal_time", 0.0);
+  
+  node_->declare_parameter<double>("constraints.mz25_joint1.goal", 0.0);
+  node_->declare_parameter<double>("constraints.mz25_joint2.goal", 0.0);
+  node_->declare_parameter<double>("constraints.mz25_joint3.goal", 0.0);
+  node_->declare_parameter<double>("constraints.mz25_joint4.goal", 0.0);
+  node_->declare_parameter<double>("constraints.mz25_joint5.goal", 0.0);
+  node_->declare_parameter<double>("constraints.mz25_joint6.goal", 0.0);
+
 
   return controller_interface::return_type::SUCCESS;
 }
@@ -64,9 +72,11 @@ command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration conf;
   conf.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  conf.names.reserve(joint_names_.size());
+  conf.names.reserve(3*joint_names_.size());
   for (const auto & joint_name  : joint_names_) {
     conf.names.push_back(joint_name + "/" + hardware_interface::HW_IF_POSITION);
+    conf.names.push_back(joint_name + "/" + "isEndPoint");
+    conf.names.push_back(joint_name + "/" + "isUpdated");
   }
   return conf;
 }
@@ -108,7 +118,7 @@ ForwardJointTrajectoryController::update()
       // error defined as the difference between current and desired
       error.positions[index] = angles::shortest_angular_distance(
         current.positions[index], desired.positions[index]);
-      error.velocities[index] = desired.velocities[index] - current.velocities[index];
+      error.velocities[index] = 0.0;
       error.accelerations[index] = 0.0;
     };
 
@@ -134,39 +144,44 @@ ForwardJointTrajectoryController::update()
   state_current.time_from_start.set__sec(0);
 
   // currently carrying out a trajectory
-  if (traj_point_active_ptr_ && (*traj_point_active_ptr_)->has_trajectory_msg() == false) {
-    // if sampling the first time, set the point before you sample
-    if (!(*traj_point_active_ptr_)->is_sampled_already()) {
-      (*traj_point_active_ptr_)->set_point_before_trajectory_msg(
-        node_->now(), state_current);
-    }
+  if (traj_point_active_ptr_ && (*traj_point_active_ptr_)->has_trajectory_msg() == true) {
+
     resize_joint_trajectory_point(state_error, joint_num);
 
     // find segment for current timestamp
-    TrajectoryPointConstIter start_segment_itr, end_segment_itr;
-    const bool valid_point = (*traj_point_active_ptr_)->sample(
-      node_->now(), state_desired,
-      start_segment_itr, end_segment_itr);
+    TrajectoryPointConstIter cur_point_itr;
+    bool is_new_point = false;
+    const bool valid_point = (*traj_point_active_ptr_)->sample(cur_point_itr, is_new_point);
 
     if (valid_point) {
-      bool abort = false;
+      // bool abort = false;
       bool outside_goal_tolerance = false;
-      const bool before_last_point = end_segment_itr != (*traj_point_active_ptr_)->end();
+      const bool before_last_point = cur_point_itr != --((*traj_point_active_ptr_)->end());
+
+      //Use end point as the desired state
+      resize_joint_trajectory_point(state_desired, joint_num);
+      for (auto index = 0ul; index < joint_num; ++index) {
+        state_desired.positions[index] = (--(*traj_point_active_ptr_)->end())->positions[index];
+        state_desired.velocities[index] = 0.0;
+        state_desired.accelerations[index] = 0.0;
+      }
+
       for (auto index = 0ul; index < joint_num; ++index) {
         // set values for next hardware write()
-        joint_position_command_interface_[index].get().set_value(state_desired.positions[index]);
+        joint_position_command_interface_[index].get().set_value(cur_point_itr->positions[index]);
+        if (is_new_point)
+        {
+          joint_is_updated_command_interface_[index].get().set_value(1);
+        }
+        joint_is_end_point_command_interface_[index].get().set_value(before_last_point ? -1 : 1);
+        
+
         compute_error_for_joint(state_error, index, state_current, state_desired);
 
-        if (before_last_point && !check_state_tolerance_per_joint(
-            state_error, index,
-            default_tolerances_.state_tolerance[index], true))
-        {
-          abort = true;
-        }
         // past the final point, check that we end up inside goal tolerance
-        if (!before_last_point && !check_state_tolerance_per_joint(
+        if (!check_state_tolerance_per_joint(
             state_error, index,
-            default_tolerances_.goal_state_tolerance[index], true))
+            default_tolerances_.goal_state_tolerance[index], false))
         {
           outside_goal_tolerance = true;
         }
@@ -183,20 +198,20 @@ ForwardJointTrajectoryController::update()
         feedback->error = state_error;
         rt_active_goal_->setFeedback(feedback);
 
-        // check abort
-        if (abort || outside_goal_tolerance) {
-          auto result = std::make_shared<FollowJTrajAction::Result>();
+        // // check abort
+        // if (abort || outside_goal_tolerance) {
+        //   auto result = std::make_shared<FollowJTrajAction::Result>();
 
-          if (abort) {
-            RCLCPP_WARN(node_->get_logger(), "Aborted due to state tolerance violation");
-            result->set__error_code(FollowJTrajAction::Result::PATH_TOLERANCE_VIOLATED);
-          } else if (outside_goal_tolerance) {
-            RCLCPP_WARN(node_->get_logger(), "Aborted due to goal tolerance violation");
-            result->set__error_code(FollowJTrajAction::Result::GOAL_TOLERANCE_VIOLATED);
-          }
-          rt_active_goal_->setAborted(result);
-          rt_active_goal_.reset();
-        }
+        //   if (abort) {
+        //     RCLCPP_WARN(node_->get_logger(), "Aborted due to state tolerance violation");
+        //     result->set__error_code(FollowJTrajAction::Result::PATH_TOLERANCE_VIOLATED);
+        //   } else if (outside_goal_tolerance) {
+        //     RCLCPP_WARN(node_->get_logger(), "Aborted due to goal tolerance violation");
+        //     result->set__error_code(FollowJTrajAction::Result::GOAL_TOLERANCE_VIOLATED);
+        //   }
+        //   rt_active_goal_->setAborted(result);
+        //   rt_active_goal_.reset();
+        // }
 
         // check goal tolerance
         if (!before_last_point) {
@@ -209,20 +224,20 @@ ForwardJointTrajectoryController::update()
             RCLCPP_INFO(node_->get_logger(), "Goal reached, success!");
           } else if (default_tolerances_.goal_time_tolerance != 0.0) {
             // if we exceed goal_time_toleralance set it to aborted
-            const rclcpp::Time traj_start = (*traj_point_active_ptr_)->get_trajectory_start_time();
-            const rclcpp::Time traj_end = traj_start + start_segment_itr->time_from_start;
+            // const rclcpp::Time traj_start = (*traj_point_active_ptr_)->get_trajectory_start_time();
+            // const rclcpp::Time traj_end = traj_start + start_segment_itr->time_from_start;
 
-            const double difference = node_->now().seconds() - traj_end.seconds();
-            if (difference > default_tolerances_.goal_time_tolerance) {
-              auto result = std::make_shared<FollowJTrajAction::Result>();
-              result->set__error_code(FollowJTrajAction::Result::GOAL_TOLERANCE_VIOLATED);
-              rt_active_goal_->setAborted(result);
-              rt_active_goal_.reset();
-              RCLCPP_WARN(
-                node_->get_logger(),
-                "Aborted due goal_time_tolerance exceeding by %f seconds",
-                difference);
-            }
+            // const double difference = node_->now().seconds() - traj_end.seconds();
+            // if (difference > default_tolerances_.goal_time_tolerance) {
+            //   auto result = std::make_shared<FollowJTrajAction::Result>();
+            //   result->set__error_code(FollowJTrajAction::Result::GOAL_TOLERANCE_VIOLATED);
+            //   rt_active_goal_->setAborted(result);
+            //   rt_active_goal_.reset();
+            //   RCLCPP_WARN(
+            //     node_->get_logger(),
+            //     "Aborted due goal_time_tolerance exceeding by %f seconds",
+            //     difference);
+            // }
           }
         }
       }
@@ -369,6 +384,26 @@ ForwardJointTrajectoryController::on_activate(const rclcpp_lifecycle::State &)
       node_->get_logger(),
       "Expected %u position command interfaces, got %u",
       joint_names_.size(), joint_position_command_interface_.size());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
+  }
+  if (!get_ordered_interfaces(
+      command_interfaces_, joint_names_, "isEndPoint",
+      joint_is_end_point_command_interface_))
+  {
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Expected %u isEndPoint command interfaces, got %u",
+      joint_names_.size(), joint_is_end_point_command_interface_.size());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
+  }
+  if (!get_ordered_interfaces(
+      command_interfaces_, joint_names_, "isUpdated",
+      joint_is_updated_command_interface_))
+  {
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "Expected %u isUpdated command interfaces, got %u",
+      joint_names_.size(), joint_is_updated_command_interface_.size());
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
   }
   if (!get_ordered_interfaces(

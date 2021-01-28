@@ -11,7 +11,7 @@ namespace mz25_robot
         return_type start() override;
         return_type stop() override;
         return_type read(std::vector<double> &, std::vector<double> &, std::vector<double> &) override;
-        return_type write(std::vector<double> &) override;
+        return_type write(std::vector<double> &, bool) override;
     };
 
 } // namespace mz25_robot

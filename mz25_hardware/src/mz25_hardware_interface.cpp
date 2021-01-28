@@ -24,10 +24,8 @@ namespace ros2_control_mz25_hardware
     state_velocity_.resize(mz25_robot::MZ25BaseInterface::NUM_AXIS, std::numeric_limits<double>::quiet_NaN());
     state_effort_.resize(mz25_robot::MZ25BaseInterface::NUM_AXIS, std::numeric_limits<double>::quiet_NaN());
     command_position_.resize(mz25_robot::MZ25BaseInterface::NUM_AXIS, std::numeric_limits<double>::quiet_NaN());
-
-    // for (const hardware_interface::ComponentInfo &joint : info_.joints)
-    // {
-    // }
+    command_is_end_point_.resize(mz25_robot::MZ25BaseInterface::NUM_AXIS, -1);
+    command_is_updated_.resize(mz25_robot::MZ25BaseInterface::NUM_AXIS, -1);
 
     status_ = hardware_interface::status::CONFIGURED;
     return return_type::OK;
@@ -62,6 +60,12 @@ namespace ros2_control_mz25_hardware
       command_interfaces.emplace_back(
           hardware_interface::CommandInterface(
               info_.joints[i].name, hardware_interface::HW_IF_POSITION, &command_position_[i]));
+      command_interfaces.emplace_back(
+          hardware_interface::CommandInterface(
+              info_.joints[i].name, "isEndPoint", &command_is_end_point_[i]));
+      command_interfaces.emplace_back(
+          hardware_interface::CommandInterface(
+              info_.joints[i].name, "isUpdated", &command_is_updated_[i]));
     }
 
     return command_interfaces;
@@ -105,11 +109,11 @@ namespace ros2_control_mz25_hardware
   {
     if (mz25_.read(state_position_, state_velocity_, state_effort_) == mz25_robot::return_type::OK)
     {
-      RCLCPP_INFO(rclcpp::get_logger("MZ25"), "Joints sucessfully read!");
-      for (auto i = 0u; i < state_position_.size(); i++)
-      {
-        RCLCPP_INFO(rclcpp::get_logger("MZ25"), "pos %.5f for joint %d!", state_position_[i], i);
-      }
+      // RCLCPP_INFO(rclcpp::get_logger("MZ25"), "Joints sucessfully read!");
+      // for (auto i = 0u; i < state_position_.size(); i++)
+      // {
+      //   RCLCPP_INFO(rclcpp::get_logger("MZ25"), "pos %.5f for joint %d!", state_position_[i], i);
+      // }
       return return_type::OK;
     }
     else
@@ -121,20 +125,27 @@ namespace ros2_control_mz25_hardware
 
   hardware_interface::return_type MZ25SystemHardware::write()
   {
-    if (mz25_.write(command_position_) == mz25_robot::return_type::OK)
+    bool is_end_point = command_is_end_point_[0] > 0;
+    bool is_updated = command_is_updated_[0] > 0;
+
+    if (is_updated)
     {
-      RCLCPP_INFO(rclcpp::get_logger("MZ25"), "Joints sucessfully written!");
-      // for (int i = 0; i < state_position_.size(); i++)
-      // {
-      //   RCLCPP_INFO(rclcpp::get_logger("MZ25"), "pos %.5f for joint %d!", state_position_[i], i);
-      // }
-      return return_type::OK;
+      for (auto &cmd_is_updated : command_is_updated_)
+      {
+        cmd_is_updated = -1;
+      }
+      if (mz25_.write(command_position_, is_end_point) == mz25_robot::return_type::OK)
+      {
+        RCLCPP_INFO(rclcpp::get_logger("MZ25"), "written pos[1]: %.3f type: %d", command_position_[0], is_end_point);
+        return return_type::OK;
+      }
+      else
+      {
+        RCLCPP_ERROR(rclcpp::get_logger("MZ25"), mz25_.get_error_msg());
+        return return_type::ERROR;
+      }
     }
-    else
-    {
-      RCLCPP_ERROR(rclcpp::get_logger("MZ25"), mz25_.get_error_msg());
-      return return_type::ERROR;
-    }
+    return return_type::OK;
   }
 
 } // namespace ros2_control_mz25_hardware

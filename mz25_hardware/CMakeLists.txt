@@ -21,7 +21,7 @@ add_library(
   ${PROJECT_NAME}
   SHARED
   src/mz25_hardware_interface.cpp
-  src/mz25_fake_robot.cpp
+  src/mz25_robot.cpp
 )
 
 target_include_directories(

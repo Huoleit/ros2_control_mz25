@@ -55,17 +55,9 @@ public:
   controller_interface::return_type
   init(const std::string & controller_name) override;
 
-  /**
-   * @brief command_interface_configuration This controller requires the position command
-   * interfaces for the controlled joints
-   */
   FORWARD_JOINT_TRAJECTORY_CONTROLLER_PUBLIC
   controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
-  /**
-   * @brief command_interface_configuration This controller requires the position and velocity
-   * state interfaces for the controlled joints
-   */
   FORWARD_JOINT_TRAJECTORY_CONTROLLER_PUBLIC
   controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
@@ -104,6 +96,11 @@ protected:
   // in joint_names_
   std::vector<std::reference_wrapper<hardware_interface::LoanedCommandInterface>>
   joint_position_command_interface_;
+  std::vector<std::reference_wrapper<hardware_interface::LoanedCommandInterface>>
+  joint_is_end_point_command_interface_;
+  std::vector<std::reference_wrapper<hardware_interface::LoanedCommandInterface>>
+  joint_is_updated_command_interface_;
+  
   std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>>
   joint_position_state_interface_;
   std::vector<std::reference_wrapper<hardware_interface::LoanedStateInterface>>

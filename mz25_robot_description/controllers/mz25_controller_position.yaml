@@ -1,9 +1,9 @@
 controller_manager:
   ros__parameters:
-    update_rate: 2  # Hz
+    update_rate: 1  # Hz
 
     mz25_arm_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: forward_joint_trajectory_controller/ForwardJointTrajectoryController
 
     joint_state_controller:
       type: joint_state_controller/JointStateController
@@ -17,4 +17,19 @@ mz25_arm_controller:
       - mz25_joint4
       - mz25_joint5
       - mz25_joint6
+      
+    constraints:
+      goal_time: 0.6
+      mz25_joint1:
+        goal: 0.02
+      mz25_joint2:
+        goal: 0.02
+      mz25_joint3:
+        goal: 0.02
+      mz25_joint4:
+        goal: 0.02
+      mz25_joint5:
+        goal: 0.02
+      mz25_joint6:
+        goal: 0.02
 

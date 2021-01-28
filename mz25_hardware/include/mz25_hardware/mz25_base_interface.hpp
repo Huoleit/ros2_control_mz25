@@ -21,7 +21,7 @@ namespace mz25_robot
         virtual return_type start() = 0;
         virtual return_type stop() = 0;
         virtual return_type read(std::vector<double> &, std::vector<double> &, std::vector<double> &) = 0;
-        virtual return_type write(std::vector<double> &) = 0;
+        virtual return_type write(std::vector<double> &, bool is_end_point) = 0;
         inline void set_error_msg(int code, std::string msg)
         {
             error_code_ = code;
