@@ -18,7 +18,7 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-
+from launch.actions import ExecuteProcess
 import xacro
 
 
@@ -43,14 +43,16 @@ def generate_launch_description():
         )
 
     return LaunchDescription([
-      Node(
-        package='controller_manager',
-        executable='ros2_control_node',
-        parameters=[robot_description, forward_controller],
-        output={
-          'stdout': 'screen',
-          'stderr': 'screen',
-          },
-          arguments=['--ros-args', '--log-level', 'info']
-        ),       
+        Node(
+            package='controller_manager',
+            executable='ros2_control_node',
+            parameters=[robot_description, forward_controller],
+            output={
+                'stdout': 'screen',
+                'stderr': 'screen',
+            },
+            arguments=['--ros-args', '--log-level', 'info']
+        ),
+        ExecuteProcess(cmd=['ros2 control load_start_controller mz25_arm_controller'], shell=True, output='screen'),
+        ExecuteProcess(cmd=['ros2 control load_start_controller joint_state_controller'], shell=True, output='screen'),
     ])
